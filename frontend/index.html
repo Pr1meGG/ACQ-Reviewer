@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Automated Code Quality Reviewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+            padding: 30px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .cards {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .card {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 8px;
+            width: 200px;
+        }
+        pre {
+            background: #020617;
+            padding: 15px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Automated Code Quality Reviewer</h1>
+
+<textarea id="code">
+import os
+def add(a,b):
+    return a+b
+print(add(2,3))
+</textarea>
+
+<br>
+<button onclick="analyze()">Run Quality Scan</button>
+
+<div class="cards">
+    <div class="card">Quality Score: <b id="score">-</b></div>
+    <div class="card">Total Issues: <b id="issues">-</b></div>
+    <div class="card">Verdict: <b id="verdict">-</b></div>
+</div>
+
+<h2>Analysis Report</h2>
+
+<h3>Rule-Based Analysis (Pylint)</h3>
+<pre id="pylint"></pre>
+
+<h3>Style Compliance Check (Flake8)</h3>
+<pre id="flake8"></pre>
+
+<script>
+async function analyze() {
+    const code = document.getElementById("code").value;
+
+    const response = await fetch("http://127.0.0.1:5000/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code })
+    });
+
+    const data = await response.json();
+
+    document.getElementById("score").innerText = data.summary.quality_score;
+    document.getElementById("issues").innerText = data.summary.total_issues;
+    document.getElementById("verdict").innerText = data.summary.verdict;
+
+    document.getElementById("pylint").innerText = data.details.pylint || "No issues";
+    document.getElementById("flake8").innerText = data.details.flake8 || "No issues";
+}
+</script>
+
+</body>
+</html>
